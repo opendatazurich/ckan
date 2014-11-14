@@ -7,6 +7,48 @@
 Changelog
 ---------
 
+v2.3
+====
+
+API changes and deprecations
+----------------------------
+
+* ``helpers.get_action()`` (or ``h.get_action()`` in templates) is deprecated.
+
+  Since action functions raise exceptions and templates cannot catch
+  exceptions, it's not a good idea to call action functions from templates.
+
+  Instead, have your controller method call the action function and pass the
+  result to your template using the ``extra_vars`` param of ``render()``.
+
+  Alternatively you can wrap individual action functions in custom template
+  helper functions that handle any exceptions appropriately, but this is likely
+  to make your the logic in your templates more complex and templates are
+  difficult to test and debug.
+
+  Note that logic.get_action() and toolkit.get_action() are *not* deprecated,
+  core code and plugin code should still use ``get_action()``.
+
+* Cross-Origin Resource Sharing (CORS) support is no longer enabled by
+  default. Previously, Access-Control-Allow-* response headers were added for
+  all requests, with Access-Control-Allow-Origin set to the wildcard value
+  ``*``. To re-enable CORS, use the new ``ckan.cors`` settings detailed in the
+  Config File Options documentation (:doc:`/maintaining/configuration`)
+
+Template changes
+----------------
+
+* Note to people with custom themes: If you've changed the
+  ``{% block secondary_content %}`` in templates/package/search.html pay close
+  attention as this pull request changes the structure of that template block a
+  little.
+
+  Also: There's a few more bootstrap classes (especially for grid layout) that
+  are now going to be in the templates. Take a look if any of the following
+  changes might effect your content blocks:
+
+  https://github.com/ckan/ckan/pull/1935
+
 v2.2.1 2014-10-15
 =================
 
