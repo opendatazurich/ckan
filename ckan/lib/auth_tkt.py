@@ -46,6 +46,8 @@ def make_plugin(secret=None,
     # Get secret from beaker setting if necessary
     if secret is None or secret == 'somesecret':
         secret = config['beaker.session.secret']
+    if include_ip is None and config.get('who.include_ip'):
+        include_ip = config.get('who.include_ip')
     # Session timeout and reissue time for auth cookie
     if timeout is None and config.get('who.timeout'):
         timeout = config.get('who.timeout')
