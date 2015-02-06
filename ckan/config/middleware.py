@@ -5,6 +5,7 @@ import logging
 import json
 import hashlib
 import os
+import urlparse
 
 import sqlalchemy as sa
 from beaker.middleware import CacheMiddleware, SessionMiddleware
@@ -165,6 +166,9 @@ def make_app(conf, full_stack=True, static_files=True, **app_conf):
     # Tracking
     if asbool(config.get('ckan.tracking_enabled', 'false')):
         app = TrackingMiddleware(app, config)
+
+    # Referer checking
+    app = RefererCheckingMiddleware(app, config)
 
     return app
 
@@ -351,3 +355,20 @@ class TrackingMiddleware(object):
             self.engine.execute(sql, key, data.get('url'), data.get('type'))
             return []
         return self.app(environ, start_response)
+
+class RefererCheckingMiddleware(object):
+    '''Checks the referer header for POST/PUT/DELETE requests, and only allows
+    them them if they are from the same domain.'''
+
+    def __init__(self, app, config):
+        self.app = app
+        self.config = config
+
+    def __call__(self, environ, start_response):
+        method = environ.get('REQUEST_METHOD')
+        site_url = self.config.get('ckan.site_url')
+        referer = environ.get('HTTP_REFERER')
+        if method in ['PUT', 'POST', 'DELETE'] and urlparse.urlparse(referer).netloc != urlparse.urlparse(site_url).netloc:
+            return []
+        return self.app(environ, start_response)
+            
