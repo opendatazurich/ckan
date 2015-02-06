@@ -366,7 +366,7 @@ class RefererCheckingMiddleware(object):
 
     def __call__(self, environ, start_response):
         method = environ.get('REQUEST_METHOD')
-        site_url = self.config.get('ckan.site_url')
+        site_url = self.config.get('ckan.site_url_internal')
         referer = environ.get('HTTP_REFERER')
         if method in ['PUT', 'POST', 'DELETE'] and urlparse.urlparse(referer).netloc != urlparse.urlparse(site_url).netloc:
             return []
