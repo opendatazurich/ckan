@@ -18,7 +18,8 @@ _get_or_bust = logic.get_or_bust
 DEFAULT_FORMATS = [
     'csv', 'xls', 'xlsx', 'tsv', 'application/csv',
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'ods', 'application/vnd.oasis.opendocument.spreadsheet',
 ]
 
 
@@ -96,8 +97,8 @@ class DatapusherPlugin(p.SingletonPlugin):
 
     def notify(self, entity, operation=None):
         if isinstance(entity, model.Resource):
-            if (operation == model.domain_object.DomainObjectOperation.new
-                    or not operation):
+            if (operation == model.domain_object.DomainObjectOperation.new or
+                    not operation):
                 # if operation is None, resource URL has been changed, as
                 # the notify function in IResourceUrlChange only takes
                 # 1 parameter
@@ -106,7 +107,27 @@ class DatapusherPlugin(p.SingletonPlugin):
                 if (entity.format and
                         entity.format.lower() in self.datapusher_formats and
                         entity.url_type != 'datapusher'):
+
                     try:
+                        task = p.toolkit.get_action('task_status_show')(
+                            context, {
+                                'entity_id': entity.id,
+                                'task_type': 'datapusher',
+                                'key': 'datapusher'}
+                        )
+                        if task.get('state') == 'pending':
+                            # There already is a pending DataPusher submission,
+                            # skip this one ...
+                            log.debug(
+                                'Skipping DataPusher submission for '
+                                'resource {0}'.format(entity.id))
+                            return
+                    except p.toolkit.ObjectNotFound:
+                        pass
+
+                    try:
+                        log.debug('Submitting resource {0}'.format(entity.id) +
+                                  ' to DataPusher')
                         p.toolkit.get_action('datapusher_submit')(context, {
                             'resource_id': entity.id
                         })

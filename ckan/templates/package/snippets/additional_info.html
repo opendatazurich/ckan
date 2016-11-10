@@ -54,19 +54,24 @@
         {% if h.check_access('package_update',{'id':pkg_dict.id}) %}
           <tr>
             <th scope="row" class="dataset-label">{{ _("State") }}</th>
-            <td class="dataset-details">{{ pkg_dict.state }}</td>
+            <td class="dataset-details">{{ _(pkg_dict.state) }}</td>
           </tr>
         {% endif %}
         {% if pkg_dict.metadata_modified %}
           <tr>
             <th scope="row" class="dataset-label">{{ _("Last Updated") }}</th>
-            <td class="dataset-details">{{ h.render_datetime(pkg_dict.metadata_modified, with_hours=True) }}</td>
+            <td class="dataset-details">
+                {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg_dict.metadata_modified %}
+            </td>
           </tr>
         {% endif %}
         {% if pkg_dict.metadata_created %}
           <tr>
             <th scope="row" class="dataset-label">{{ _("Created") }}</th>
-            <td class="dataset-details">{{ h.render_datetime(pkg_dict.metadata_created, with_hours=True) }}</td>
+
+            <td class="dataset-details">
+                {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg_dict.metadata_created %}
+            </td>
           </tr>
         {% endif %}
 

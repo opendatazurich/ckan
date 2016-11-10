@@ -45,6 +45,7 @@ from ckan.logic.validators import (package_id_not_changed,
                                    resource_id_exists,
                                    tag_not_in_vocabulary,
                                    group_id_exists,
+                                   group_id_or_name_exists,
                                    owner_org_validator,
                                    user_name_exists,
                                    role_exists,
@@ -70,7 +71,8 @@ from ckan.logic.converters import (convert_user_name_or_id_to_id,
                                    )
 from formencode.validators import OneOf
 import ckan.model
-import ckan.lib.maintain as maintain
+import ckan.plugins as plugins
+
 
 def default_resource_schema():
 
@@ -97,7 +99,7 @@ def default_resource_schema():
         'cache_last_updated': [ignore_missing, isodate],
         'webstore_last_updated': [ignore_missing, isodate],
         'tracking_summary': [ignore_missing],
-        'datastore_active': [ignore],
+        'datastore_active': [ignore_missing],
         '__extras': [ignore_missing, extras_unicode_convert, keep_extras],
     }
 
@@ -105,6 +107,7 @@ def default_resource_schema():
 
 def default_update_resource_schema():
     schema = default_resource_schema()
+    schema['revision_id'] = [ignore]
     return schema
 
 def default_tags_schema():
@@ -266,7 +269,7 @@ def default_show_package_schema():
     schema['owner_org'] = []
     schema['private'] = []
     schema['revision_id'] = []
-    schema['tracking_summary'] = []
+    schema['tracking_summary'] = [ignore_missing]
     schema['license_title'] = []
 
     return schema
@@ -428,6 +431,7 @@ def default_user_schema():
         'name': [not_empty, name_validator, user_name_validator, unicode],
         'fullname': [ignore_missing, unicode],
         'password': [user_password_validator, user_password_not_empty, ignore_missing, unicode],
+        'password_hash': [ignore_missing, ignore_not_sysadmin, unicode],
         'email': [not_empty, unicode],
         'about': [ignore_missing, user_about_validator, unicode],
         'created': [ignore],
@@ -541,9 +545,9 @@ def default_follow_dataset_schema():
 
 def member_schema():
     schema = {
-        'id': [group_id_exists, unicode],
-        'username': [user_name_exists, unicode],
-        'role': [role_exists, unicode],
+        'id': [not_missing, group_id_or_name_exists, unicode],
+        'username': [not_missing, user_id_or_name_exists, unicode],
+        'role': [not_missing, role_exists, unicode],
     }
     return schema
 
@@ -657,4 +661,53 @@ def default_update_resource_view_schema(resource_view):
         'view_type': [ignore],# can not change after create
         'package_id': [ignore]
     })
+    return schema
+
+
+def default_update_configuration_schema():
+
+    schema = {
+        'ckan.site_title': [unicode],
+        'ckan.site_logo': [unicode],
+        'ckan.site_url': [unicode],
+        'ckan.site_description': [unicode],
+        'ckan.site_about': [unicode],
+        'ckan.site_intro_text': [unicode],
+        'ckan.site_custom_css': [unicode],
+        'ckan.main_css': [unicode],
+        'ckan.homepage_style': [is_positive_integer],
+    }
+
+    # Add ignore_missing to all fields, otherwise you need to provide them all
+    for key, validators in schema.iteritems():
+        validators.insert(0, ignore_missing)
+
+    return schema
+
+
+def update_configuration_schema():
+    '''
+    Returns the schema for the config options that can be edited during runtime
+
+    By default these are the keys of the
+    :py:func:`ckan.logic.schema.default_update_configuration_schema`.
+    Extensions can add or remove keys from this schema using the
+    :py:meth:`ckan.plugins.interfaces.IConfigurer.update_config_schema`
+    method.
+
+    These configuration options can be edited during runtime via the web
+    interface or using
+    the :py:func:`ckan.logic.action.update.config_option_update` API call.
+
+    :returns: a dictionary mapping runtime-editable configuration option keys
+      to lists of validator and converter functions to be applied to those
+      keys
+    :rtype: dictionary
+    '''
+
+    schema = default_update_configuration_schema()
+    for plugin in plugins.PluginImplementations(plugins.IConfigurer):
+        if hasattr(plugin, 'update_config_schema'):
+            schema = plugin.update_config_schema(schema)
+
     return schema
