@@ -13,7 +13,7 @@ import ckan.logic as logic
 import ckan.plugins as p
 import ckanext.datapusher.logic.schema as dpschema
 import ckanext.datapusher.interfaces as interfaces
-from asbool import asbool
+from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 _get_or_bust = logic.get_or_bust
