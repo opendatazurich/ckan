@@ -13,11 +13,13 @@ import ckan.logic as logic
 import ckan.plugins as p
 import ckanext.datapusher.logic.schema as dpschema
 import ckanext.datapusher.interfaces as interfaces
+from asbool import asbool
 
 log = logging.getLogger(__name__)
 _get_or_bust = logic.get_or_bust
 _validate = ckan.lib.navl.dictization_functions.validate
 
+verify_ssl = asbool(pylons.config.get('ckan.datapusher.check_ssl_verify'))
 
 def datapusher_submit(context, data_dict):
     ''' Submit a job to the datapusher. The datapusher is a service that
@@ -112,7 +114,9 @@ def datapusher_submit(context, data_dict):
                     'task_created': task['last_updated'],
                     'original_url': resource_dict.get('url'),
                 }
-            }))
+            },
+            verify=verify_ssl
+            ))
         r.raise_for_status()
     except requests.exceptions.ConnectionError, e:
         error = {'message': 'Could not connect to DataPusher.',
@@ -265,7 +269,8 @@ def datapusher_status(context, data_dict):
         url = urlparse.urljoin(datapusher_url, 'job' + '/' + job_id)
         try:
             r = requests.get(url, headers={'Content-Type': 'application/json',
-                                           'Authorization': job_key})
+                                           'Authorization': job_key},
+                             verify=verify_ssl)
             r.raise_for_status()
             job_detail = r.json()
         except (requests.exceptions.ConnectionError,
