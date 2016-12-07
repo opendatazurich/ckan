@@ -89,7 +89,7 @@ class DatapusherPlugin(p.SingletonPlugin):
         datapusher_formats = config.get('ckan.datapusher.formats', '').lower()
         self.datapusher_formats = datapusher_formats.split() or DEFAULT_FORMATS
 
-        for config_option in ('ckan.site_url', 'ckan.datapusher.url',):
+        for config_option in ('ckan.site_url_internal', 'ckan.datapusher.url',):
             if not config.get(config_option):
                 raise Exception(
                     'Config option `{0}` must be set to use the DataPusher.'
