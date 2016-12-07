@@ -114,9 +114,9 @@ def datapusher_submit(context, data_dict):
                     'task_created': task['last_updated'],
                     'original_url': resource_dict.get('url'),
                 }
-            },
-            verify=verify_ssl
-            ))
+            }
+            ),
+            verify=verify_ssl)
         r.raise_for_status()
     except requests.exceptions.ConnectionError, e:
         error = {'message': 'Could not connect to DataPusher.',
