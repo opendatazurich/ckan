@@ -51,7 +51,7 @@ class DatapusherCommand(cli.CkanCommand):
 
     def _submit_all(self):
         resources_ids = datastore_db.get_all_resources_ids_in_datastore()
-        self._submit(resource_ids)
+        self._submit(resources_ids)
 
     def _submit_package(self, pkg_id):
         import ckan.model as model
