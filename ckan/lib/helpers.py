@@ -133,11 +133,10 @@ def redirect_to(*args, **kw):
 
 
 def url(*args, **kw):
-    '''Create url adding i18n information if selected
-    wrapper for pylons.url'''
-    locale = kw.pop('locale', None)
-    my_url = _pylons_default_url(*args, **kw)
-    return _add_i18n_to_url(my_url, locale=locale, **kw)
+    '''
+    Deprecated: please use `url_for` instead
+    '''
+    return url_for(*args, **kw)
 
 
 def get_site_protocol_and_host():
