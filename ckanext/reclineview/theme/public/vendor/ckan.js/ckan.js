@@ -22,7 +22,7 @@ if (isNodeModule) {
     var options = {
       url: this.endpoint + '/3/action/' + name,
       data: data,
-      type: 'POST'
+      type: 'GET'
     };
     return this._ajax(options, cb);
   };
@@ -119,7 +119,7 @@ if (isNodeModule) {
 
   var _browserRequest = function(options, cb) {
     var self = this;
-    options.data = encodeURIComponent(JSON.stringify(options.data));
+    //options.data = encodeURIComponent(JSON.stringify(options.data));
     options.success = function(data) {
       cb(null, data);
     }
