@@ -347,7 +347,7 @@ class PackageSearchQuery(SearchQuery):
         query['wt'] = query.get('wt', 'json')
 
         # If the query has a colon in it then consider it a fielded search and do use dismax.
-        defType = query.get('defType', 'dismax')
+        defType = query.get('defType', 'edismax')
         if ':' not in query['q'] or defType == 'edismax':
             query['defType'] = defType
             query['tie'] = query.get('tie', '0.1')
