@@ -23,10 +23,6 @@ VALID_SOLR_PARAMETERS = set([
     'extras', 'fq_list', 'tie', 'defType', 'mm'
 ])
 
-# for (solr) package searches, this specifies the fields that are searched
-# and their relative weighting
-QUERY_FIELDS = "name^4 title^4 tags^2 groups^2 text"
-
 solr_regex = re.compile(r'([\\+\-&|!(){}\[\]^"~*?:])')
 
 def escape_legacy_argument(val):
@@ -351,14 +347,14 @@ class PackageSearchQuery(SearchQuery):
         query['wt'] = query.get('wt', 'json')
 
         # If the query has a colon in it then consider it a fielded search and do use dismax.
-        defType = query.get('defType', 'dismax')
+        defType = query.get('defType', 'edismax')
         if ':' not in query['q'] or defType == 'edismax':
             query['defType'] = defType
             query['tie'] = query.get('tie', '0.1')
             # this minimum match is explained
             # http://wiki.apache.org/solr/DisMaxQParserPlugin#mm_.28Minimum_.27Should.27_Match.29
             query['mm'] = query.get('mm', '2<-1 5<80%')
-            query['qf'] = query.get('qf', QUERY_FIELDS)
+            query['qf'] = query.get('qf', config.get('search.default_fields', 'name^4 title^4 tags^2 groups^2 text'))
 
         try:
             if query['q'].startswith('{!'):

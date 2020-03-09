@@ -78,6 +78,9 @@ ckan.auth.roles_that_cascade_to_sub_groups = admin
 ckan.site_id = default
 #solr_url = http://127.0.0.1:8983/solr
 
+# For Solr package searches, this specifies the fields that are searched and their relative weighting
+# search.default_fields = "name^4 title^4 tags^2 groups^2 text"
+
 
 ## Redis Settings
 
